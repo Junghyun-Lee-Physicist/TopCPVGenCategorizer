@@ -1,0 +1,54 @@
+# =============================================================================
+#  datasets.txt  —  Run-2 ttbar MC datasets to process
+#  -----------------------------------------------------------------------------
+#  Format:  <short_name>  <DAS_dataset_path>
+#  Lines starting with '#' are comments and skipped.
+#  -----------------------------------------------------------------------------
+#  Coverage:
+#    - Nominal: TT inclusive + SemiLeptonic + 2L2Nu (dilepton)
+#    - Systematics: hdamp, mtop, tune, isr/fsr, color reconnection (CR), erdON
+#    - Era: UL2017 (NanoAODv9). Add other years by duplicating with suffix.
+#  -----------------------------------------------------------------------------
+
+# ====== NOMINAL ======================================================
+TTTo2L2Nu_2017                 /TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTToSemiLeptonic_2017          /TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTToHadronic_2017              /TTToHadronic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+
+# ====== HDAMP SYSTEMATIC =============================================
+TTTo2L2Nu_hdampUp_2017         /TTTo2L2Nu_hdampUP_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTTo2L2Nu_hdampDown_2017       /TTTo2L2Nu_hdampDOWN_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTToSemiLeptonic_hdampUp_2017  /TTToSemiLeptonic_hdampUP_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTToSemiLeptonic_hdampDown_2017 /TTToSemiLeptonic_hdampDOWN_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+
+# ====== TOP MASS SYSTEMATIC ==========================================
+TTTo2L2Nu_mtop169p5_2017       /TTTo2L2Nu_mtop169p5_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTTo2L2Nu_mtop175p5_2017       /TTTo2L2Nu_mtop175p5_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTToSemiLeptonic_mtop169p5_2017 /TTToSemiLeptonic_mtop169p5_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTToSemiLeptonic_mtop175p5_2017 /TTToSemiLeptonic_mtop175p5_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+
+# ====== TUNE / UNDERLYING-EVENT ======================================
+TTTo2L2Nu_TuneCP5up_2017       /TTTo2L2Nu_TuneCP5up_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTTo2L2Nu_TuneCP5down_2017     /TTTo2L2Nu_TuneCP5down_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTToSemiLeptonic_TuneCP5up_2017 /TTToSemiLeptonic_TuneCP5up_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTToSemiLeptonic_TuneCP5down_2017 /TTToSemiLeptonic_TuneCP5down_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+
+# ====== COLOR RECONNECTION ===========================================
+TTTo2L2Nu_CR1_2017             /TTTo2L2Nu_TuneCP5CR1_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTTo2L2Nu_CR2_2017             /TTTo2L2Nu_TuneCP5CR2_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTTo2L2Nu_erdON_2017           /TTTo2L2Nu_TuneCP5_erdON_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTToSemiLeptonic_CR1_2017      /TTToSemiLeptonic_TuneCP5CR1_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTToSemiLeptonic_CR2_2017      /TTToSemiLeptonic_TuneCP5CR2_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTToSemiLeptonic_erdON_2017    /TTToSemiLeptonic_TuneCP5_erdON_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+
+# ====== ALTERNATIVE HADRONIZERS (Herwig) =============================
+TTToSemiLeptonic_Herwig_2017   /TTToSemiLeptonic_TuneCH3_13TeV-powheg-herwig7/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTTo2L2Nu_Herwig_2017          /TTTo2L2Nu_TuneCH3_13TeV-powheg-herwig7/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+
+# Notes:
+#   - For 2016 / 2018 versions, copy the above with suffix swap and update
+#     the campaign string (e.g. RunIISummer20UL16NanoAODv9, RunIISummer20UL18).
+#   - For PSWeight-based ISR/FSR systematics, the nominal samples already
+#     contain the weights — no separate dataset needed.
+#   - ISR/FSR up/down dedicated samples (no PSWeight needed) also exist:
+#       /TT*_TuneCP5_*ISRdown_*, /TT*_TuneCP5_*FSRup_*  etc. — add if needed.

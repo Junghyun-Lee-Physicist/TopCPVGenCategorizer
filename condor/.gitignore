@@ -1,0 +1,6 @@
+submissions/
+filelists/
+index_for_condor.txt
+x509up.proxy
+*.proxy
+logs/

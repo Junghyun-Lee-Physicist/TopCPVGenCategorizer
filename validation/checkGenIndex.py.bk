@@ -1,0 +1,173 @@
+#!/usr/bin/env python3
+# =============================================================================
+#  checkGenIndex.py — GenPar_Idx / SelectedIdx 검증 스크립트
+#  -----------------------------------------------------------------------------
+#  TopCPVGenCategorizer 출력(GenCatTree)에 대해 4가지 테스트 수행:
+#    Test 1: 슬롯별 pdgId 정합성 (slot 2 == +6, slot 4 == +24, ...)
+#    Test 2: 위상 순서 (mother index < daughter index)
+#    Test 3: 인덱스 분포 히스토그램 출력 (보고용 텍스트 히스토그램)
+#    Test 4: 물리량 요약 (top pT 평균, channel 비율)
+#
+#  사용법:
+#    python3 checkGenIndex.py <gencat_output.root> [maxEvents]
+#
+#  PyROOT 필요 (lxplus LCG 환경에 포함):
+#    source /cvmfs/sft.cern.ch/lcg/views/LCG_104/x86_64-el9-gcc12-opt/setup.sh
+# =============================================================================
+
+import sys
+import math
+from collections import Counter
+
+
+def text_hist(values, nbins=20, lo=None, hi=None, width=50, title=""):
+    """간단한 텍스트 히스토그램."""
+    if not values:
+        return f"  {title}: (no entries)\n"
+    lo = min(values) if lo is None else lo
+    hi = max(values) if hi is None else hi
+    if hi <= lo:
+        hi = lo + 1
+    bins = [0] * nbins
+    for v in values:
+        b = int((v - lo) / (hi - lo) * nbins)
+        b = min(max(b, 0), nbins - 1)
+        bins[b] += 1
+    peak = max(bins) or 1
+    out = [f"  {title}  (entries={len(values)}, range=[{lo:.0f},{hi:.0f}])"]
+    for i, c in enumerate(bins):
+        edge = lo + (hi - lo) * i / nbins
+        bar = "#" * int(width * c / peak)
+        out.append(f"    {edge:8.1f} | {bar} {c}")
+    return "\n".join(out) + "\n"
+
+
+def main():
+    if len(sys.argv) < 2:
+        print(f"usage: {sys.argv[0]} <gencat_output.root> [maxEvents]")
+        sys.exit(1)
+
+    fname = sys.argv[1]
+    max_events = int(sys.argv[2]) if len(sys.argv) > 2 else -1
+
+    import ROOT
+    ROOT.gROOT.SetBatch(True)
+
+    f = ROOT.TFile.Open(fname)
+    if not f or f.IsZombie():
+        print(f"[FATAL] cannot open {fname}")
+        sys.exit(2)
+    tree = f.Get("GenCatTree")
+    if not tree:
+        print("[FATAL] GenCatTree not found")
+        sys.exit(3)
+
+    # 기대하는 슬롯 → pdgId 매핑
+    expected_pdg = {2: 6, 3: -6, 4: 24, 5: 5, 6: -24, 7: -5}
+
+    n_total = 0
+    n_signal = 0
+    pdg_pass = Counter()
+    pdg_fail = Counter()
+    topo_pass = 0
+    topo_fail = 0
+    slot_indices = {k: [] for k in (2, 3, 4, 8, 10)}
+    top_pts = []
+    channels = Counter()
+
+    nentries = tree.GetEntries()
+    if max_events > 0:
+        nentries = min(nentries, max_events)
+
+    for ievt in range(nentries):
+        tree.GetEntry(ievt)
+        n_total += 1
+
+        channels[tree.Channel_Idx] += 1
+
+        if not tree.isSignal:
+            continue
+        n_signal += 1
+        top_pts.append(tree.GenTop_pt)
+
+        sel = [tree.SelectedIdx[k] for k in range(12)]
+        pdg = list(tree.GenPar_pdgId)
+        idx = list(tree.GenPar_Idx)
+
+        # Test 1: 슬롯 pdgId 정합성 — GenPar_pdgId[slot] 검사
+        for slot, want in expected_pdg.items():
+            if slot < len(pdg) and idx[slot] >= 0:
+                if pdg[slot] == want:
+                    pdg_pass[slot] += 1
+                else:
+                    pdg_fail[slot] += 1
+
+        # Test 2: 위상 순서 — t < W+ < W+ daughter
+        if sel[2] >= 0 and sel[4] >= 0 and sel[8] >= 0:
+            if sel[2] < sel[4] < sel[8]:
+                topo_pass += 1
+            else:
+                topo_fail += 1
+
+        # Test 3: 인덱스 수집
+        for k in slot_indices:
+            if sel[k] >= 0:
+                slot_indices[k].append(sel[k])
+
+    # ------------------------------------------------------------------
+    # 리포트
+    # ------------------------------------------------------------------
+    print("=" * 64)
+    print(f"  checkGenIndex report — {fname}")
+    print("=" * 64)
+    print(f"  events processed : {n_total}")
+    print(f"  signal events    : {n_signal} ({100.0*n_signal/max(n_total,1):.1f}%)")
+    print()
+
+    print("[Test 1] Slot pdgId consistency (must be 100%)")
+    slot_names = {2: "t(+6)", 3: "tbar(-6)", 4: "W+(+24)",
+                  5: "b(+5)", 6: "W-(-24)", 7: "bbar(-5)"}
+    all_ok = True
+    for slot in sorted(expected_pdg):
+        p, q = pdg_pass[slot], pdg_fail[slot]
+        tot = p + q
+        ok = "OK " if q == 0 else "FAIL"
+        if q: all_ok = False
+        print(f"    slot {slot:2d} {slot_names[slot]:10s}: {p}/{tot}  [{ok}]")
+    print()
+
+    print("[Test 2] Topological ordering t < W+ < W+ daughter (must be 100%)")
+    print(f"    pass: {topo_pass}, fail: {topo_fail}  "
+          f"[{'OK' if topo_fail == 0 else 'FAIL'}]")
+    print()
+
+    print("[Test 3] Index distributions (보고용)")
+    labels = {2: "SelectedIdx[2]  (top)",
+              3: "SelectedIdx[3]  (anti-top)",
+              4: "SelectedIdx[4]  (W+)",
+              8: "SelectedIdx[8]  (W+ daughter 1)",
+              10:"SelectedIdx[10] (W- daughter 1)"}
+    for k in sorted(slot_indices):
+        print(text_hist(slot_indices[k], nbins=15, lo=0, title=labels[k]))
+
+    print("[Test 4] Physics summary (MiniAOD와 일치해야 하는 값들)")
+    if top_pts:
+        mean_pt = sum(top_pts) / len(top_pts)
+        print(f"    <GenTop_pt> = {mean_pt:.1f} GeV  (기대: ~100-130 GeV for ttbar)")
+    print(f"    Channel_Idx breakdown:")
+    name = {0: "all-had", 11: "l+jets(e)", 13: "l+jets(mu)",
+            22: "ee", 24: "emu", 26: "mumu"}
+    tau_n = sum(v for k, v in channels.items() if k < 0)
+    for k in sorted(channels):
+        if k < 0: continue
+        print(f"      {k:4d} {name.get(k, '?'):12s}: {channels[k]}")
+    print(f"      <0   tau-involved: {tau_n}")
+    print()
+    print("=" * 64)
+    verdict = "ALL TESTS PASSED" if (all_ok and topo_fail == 0) else "SOME TESTS FAILED"
+    print(f"  {verdict}")
+    print("=" * 64)
+
+
+if __name__ == "__main__":
+    main()
