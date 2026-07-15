@@ -18,6 +18,23 @@ using std::cerr;
 using std::endl;
 using std::string;
 using std::vector;
+
+namespace {
+// E from (pt, eta, mass). Beam-parallel record legs (e.g. status-21 incoming
+// partons: pt~0, NanoAOD eta ~ O(1e3..1e4)) have no recoverable energy —
+// std::cosh silently returns inf there (Float_t overflows near |eta|~89), so
+// clamp to the -999 sentinel like every other unrecoverable field. Physical
+// gen particles stay |eta| < ~20; 50 is a safe, unambiguous cut. Synchronized
+// with the NtupleForge module's _energy() (A14).
+constexpr float kEtaEnergyMax = 50.f;
+
+inline float SafeEnergy(float pt, float eta, float mass) {
+    if (std::abs(eta) > kEtaEnergyMax) return -999.f;
+    const float ch = std::cosh(eta);
+    const float e  = std::sqrt(pt * pt * ch * ch + mass * mass);
+    return std::isfinite(e) ? e : -999.f;
+}
+}  // namespace
 using std::pair;
 
 // =============================================================================
@@ -483,8 +500,7 @@ bool TopCPVGenCategorizer::FindTopAntiTop() {
         pt  = pts[idx];
         eta = etas[idx];
         phi = phis[idx];
-        const float ch = std::cosh(eta);
-        energy = std::sqrt(pt*pt*ch*ch + mass[idx]*mass[idx]);
+        energy = SafeEnergy(pt, eta, mass[idx]);
     };
     fillKin(tIdx,    result_.genTop_pt,   result_.genTop_eta,
                      result_.genTop_phi,  result_.genTop_energy);
@@ -672,8 +688,7 @@ void TopCPVGenCategorizer::PushGenPar(int idx, int mom1, int mom2, int dau1, int
         const float eta  = (*const_cast<TTreeReaderArray<Float_t>*>(etaArr))[idx];
         const float phi  = (*const_cast<TTreeReaderArray<Float_t>*>(phiArr))[idx];
         const float mass = (*const_cast<TTreeReaderArray<Float_t>*>(massArr))[idx];
-        const float ch     = std::cosh(eta);
-        const float energy = std::sqrt(pt * pt * ch * ch + mass * mass);
+        const float energy = SafeEnergy(pt, eta, mass);
 
         result_.genPar_idx.push_back(idx);
         result_.genPar_pdgId.push_back((*const_cast<TTreeReaderArray<Int_t>*>(pdgArr))[idx]);
@@ -898,8 +913,7 @@ void TopCPVGenCategorizer::ProcessGenJets() {
         const float eta  = etas[i];
         const float phi  = phis[i];
         const float m    = mass[i];
-        const float ch   = std::cosh(eta);
-        const float energy = std::sqrt(pt*pt*ch*ch + m*m);
+        const float energy = SafeEnergy(pt, eta, m);
 
         result_.genJet_pt.push_back(pt);
         result_.genJet_eta.push_back(eta);
@@ -960,8 +974,7 @@ void TopCPVGenCategorizer::ProcessGenBHadrons() {
             const float bphi  = (*const_cast<TTreeReaderArray<Float_t>*>(phiArr))[bIdx];
             const float bmass = (*const_cast<TTreeReaderArray<Float_t>*>(massArr))[bIdx];
             const int   bpdg  = (*const_cast<TTreeReaderArray<Int_t>*>(pdgArr))[bIdx];
-            const float bch   = std::cosh(beta);
-            const float ben   = std::sqrt(bpt*bpt*bch*bch + bmass*bmass);
+            const float ben   = SafeEnergy(bpt, beta, bmass);
 
             result_.genBHad_pt.push_back(bpt);
             result_.genBHad_eta.push_back(beta);

@@ -155,8 +155,11 @@ int main() {
     e3.mom  = {-1, -1, 0, 0, 2, 3};
     e3.flg  = {IHP, IHP, IHP, IHP, LAST, LAST};
     e3.sta  = {21, 21, 23, 23, 1, 1};
-    e3.pt   = {70.f, 68.f, 35.f, 33.f, 34.8f, 32.9f};
-    e3.eta  = std::vector<Float_t>(6, 0.2f);
+    e3.pt   = {0.f, 0.f, 35.f, 33.f, 34.8f, 32.9f};      // incoming legs: pt~0
+    // idx0/1 = status-21 incoming partons: NanoAOD stores beam-parallel eta as
+    // O(1e4) -> without the A14 SafeEnergy sentinel this writes inf (C++) /
+    // crashes with OverflowError (Python module).
+    e3.eta  = {23000.f, -23000.f, 0.2f, 0.2f, 0.2f, 0.2f};
     e3.phi  = std::vector<Float_t>(6, 1.0f);
     e3.mass = std::vector<Float_t>(6, 0.f);
 
@@ -172,6 +175,9 @@ int main() {
         CHECK_EQ("Channel_Lepton_Final",     r.channel_lepton_final, 2);
         CHECK_EQ("Channel_Tau_Lepton",       r.channel_tau_lepton, 0);
         CHECK_EQ("Channel_Idx_Expanded",     r.channel_idx_expanded, 26);
+        CHECK_EQ("GenPar_energy[0] (A14)",   (long long)r.genPar_energy[0], -999);
+        CHECK_EQ("GenPar_energy[1] (A14)",   (long long)r.genPar_energy[1], -999);
+        CHECK_EQ("GenPar_energy[2] > 0",     r.genPar_energy[2] > 0.f ? 1 : 0, 1);
     }
 
     if (nFail) { std::printf("\nCROSS-VALIDATION FAILED (%d)\n", nFail); return 1; }
