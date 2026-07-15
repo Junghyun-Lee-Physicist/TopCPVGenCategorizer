@@ -82,7 +82,7 @@ slot 10, 11 W-의 두 daughter
 
 `Channel_Jets`: hadronic W의 quark pair 코드 (예: W+→ud̄ = 12, W+→cs̄ = 34). 두 W 모두 hadronic이면 100단위로 연결.
 
-> **정의 상세**: `Channel_Idx`(W-decay level, τ는 후속 붕괴 미분해)와 `Channel_Idx_Final`(τ→e/μ/had 분해)의 물리적 정의·경계 케이스·τ 마이그레이션 패턴은 `docs/GenPart_channel_definition.md` §8–§9, §13 참조. 그 문서는 CMSSW 공식 소스로 검증됨.
+> **정의 상세**: `Channel_Idx`(W-decay level, τ는 후속 붕괴 미분해)와 `Channel_Idx_Final`(τ→e/μ/had 분해)의 물리적 정의·경계 케이스·τ 마이그레이션 패턴은 `docs/05_GenPart_channel_definition.md` §8–§9, §13 참조. 그 문서는 CMSSW 공식 소스로 검증됨.
 
 ---
 
@@ -114,7 +114,7 @@ bit 14  isLastCopyBeforeFSR
 - **Hadronizer 분기 전체 삭제** — PYTHIA/HERWIG 별도 코드 경로(~600줄)가 불필요
 - **IndexLinker 재귀 삭제** — `isLastCopy` 비트가 이미 "이 입자가 radiation chain의 최종본"임을 표시
 
-> **배경**: `GenPart`는 generator record 전체가 아니라 `finalGenParticles`(GenParticlePruner)로 추려낸 "interesting gen particles" collection이다. keep/drop rule, τ decay chain 보존 방식, "GenPart에는 hadronization 후 모든 stable particle이 있는 게 아니다"라는 한계는 `docs/GenPart_channel_definition.md` §3–§6, §10 참조.
+> **배경**: `GenPart`는 generator record 전체가 아니라 `finalGenParticles`(GenParticlePruner)로 추려낸 "interesting gen particles" collection이다. keep/drop rule, τ decay chain 보존 방식, "GenPart에는 hadronization 후 모든 stable particle이 있는 게 아니다"라는 한계는 `docs/05_GenPart_channel_definition.md` §3–§6, §10 참조.
 
 ### 2.2 가계도 정보의 차이
 
@@ -574,3 +574,84 @@ TopCPVGenCategorizer/
 │   └── GenIndex_validation.md      # gen index 전용 가이드
 └── condor/                         # HTCondor 인프라 (8 파일)
 ```
+
+---
+
+# 부록 — README에서 이관 (2026-07-15, 문서 구조 정리)
+
+## 부록: 두 가지 동작 모드
+
+
+### Mode A — Standalone (이 main_gencat.cpp)
+독립 실행파일. selection/correction 없이 generator categorization만 수행.
+
+### Mode B — Analysis 클래스에 plug-in
+
+```cpp
+// Analysis.h
+TopCPVGenCategorizer* genCat_ = nullptr;
+
+// Analysis 생성자 (MC에서만)
+if (!isData) {
+    genCat_ = new TopCPVGenCategorizer();
+    genCat_->AttachExternal(&uintSingles, &floatSingles,
+                            &floatVectors, &intVectors,
+                            &boolVectors, &ucharVectors);
+}
+
+// Analysis::Loop() 안
+if (genCat_) {
+    const GenCatResult& r = genCat_->ProcessEvent();
+    if (r.channel_idx != 24) continue;
+    if (genCat_->HasTauSecondaryLepton()) continue;
+}
+```
+
+Mode B에서는 host Analysis의 branchlist에 GenPart_*, GenDressedLepton_*, GenVisTau_*, GenJet_*, GenMET_*, PSWeight 등이 포함되어 있어야 합니다.
+
+## 부록: B-Fragmentation 노트 (중요)
+
+
+원본 MiniAOD `SSBAnalyzer`는 custom CMSSW producer `bfragWgtProducer`를 통해 B-fragmentation systematic weight들을 저장했습니다:
+- `Frag_Cen_Weight`, `Frag_Up_Weight`, `Frag_Down_Weight`, `Frag_Peterson_Weight`
+- `Semilep_BrUp_Weight`, `Semilep_BrDown_Weight`
+
+**이것들은 NanoAOD에 없습니다.** NanoAOD가 제공하는 가장 가까운 변수는 `PSWeight[0..3]` (ISR/FSR up/down)인데 이는 parton-shower 변동으로 fragmentation systematic과는 다른 systematic입니다.
+
+CPV 분석에서 정확한 B-fragmentation systematic이 필요하면 3가지 옵션이 있습니다:
+1. PSWeight를 근사 대체로 사용 (지금 코드가 자동 저장)
+2. NanoAOD 재생산 (bfragWgtProducer 포함된 custom production)
+3. MiniAOD friend tree와 event ID로 join
+
+## 부록: 검증
+
+
+1000-event sanity check on `TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8`:
+
+```
+TopCPVGenCategorizer summary
+  total events  : 1000
+  signal (ttbar): 1000  (100%)
+  Channel_Idx distribution:
+    11  l+jets (e)       : 344
+    13  l+jets (mu)      : 330
+    <0  tau-involved     : 326
+    (dilepton/all-had 0 — SemiLeptonic filter)
+```
+
+비율이 PDG ttbar branching ratio와 일치하므로 코드가 의도대로 작동합니다.
+
+## 부록: B-fragmentation weight 복구 (friend tree)
+
+
+B-frag weight는 표준 NanoAOD에 없으므로 MiniAOD 산출물에서 (run, lumi, event)로
+join해서 가져온다. TopCPVGenCategorizer는 standalone 출력 GenCatTree에 event-id
+join key를 자동으로 기록한다. 이후:
+
+```bash
+python validation/makeBfragFriend.py \
+    --nano gencat_output.root --mini ssb_miniaod.root --out bfrag_friend.root
+# 분석에서: t->AddFriend("BfragFriend", "bfrag_friend.root");
+```
+
+자세한 내용은 `docs/04_TECHNICAL.md` §8.3 참조.

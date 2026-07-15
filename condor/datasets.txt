@@ -1,24 +1,47 @@
 # =============================================================================
-#  datasets.txt  —  Run-2 ttbar MC datasets to process
+#  datasets.txt  —  2017UL validation-campaign datasets (NanoAODv9)
 #  -----------------------------------------------------------------------------
 #  Format:  <short_name>  <DAS_dataset_path>
 #  Lines starting with '#' are comments and skipped.
 #  -----------------------------------------------------------------------------
-#  Coverage:
-#    - Nominal: TT inclusive + SemiLeptonic + 2L2Nu (dilepton)
-#    - Systematics: hdamp, mtop, tune, isr/fsr, color reconnection (CR), erdON
-#    - Era: UL2017 (NanoAODv9). Add other years by duplicating with suffix.
+#  Coverage (2026-07-15): the FULL sample list submitted to NtupleForge
+#  (CPV2017UL campaign) — ttbar signal + V+jets / single top / ttV / QCD
+#  backgrounds — so the standalone GenCatTree can be produced for every sample
+#  that validate_topcpvcat.py needs to compare against.
+#
+#  NOTE: labels are aligned 1:1 with the NtupleForge submission YAML keys so
+#  that filelists/, condor output dirs, and validation bookkeeping match the
+#  NtupleForge side by name. (Old labels TTTo*_2017 were replaced accordingly;
+#  ttbar systematics variants live in datasets.txt.full.)
 #  -----------------------------------------------------------------------------
 
-# ====== NOMINAL ======================================================
-TTTo2L2Nu_2017                 /TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
-TTToSemiLeptonic_2017          /TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
-TTToHadronic_2017              /TTToHadronic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+# ====== SIGNAL (ttbar, nominal) ==============================================
+TTTo2L2Nu_TuneCP5_powheg                            /TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTToSemiLeptonic_TuneCP5_powheg                     /TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+TTToHadronic_TuneCP5_powheg                         /TTToHadronic_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+
+# ====== BACKGROUND — V+jets ==================================================
+WJetsToLNu_TuneCP5_amcatnloFXFX                     /WJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v2/NANOAODSIM
+DYJetsToLL_M-50_TuneCP5_madgraphMLM                 /DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+DYJetsToLL_M-10to50_TuneCP5_amcatnloFXFX            /DYJetsToLL_M-10to50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+
+# ====== BACKGROUND — single top ==============================================
+ST_tW_top_5f_NoFullyHadronicDecays_TuneCP5_powheg   /ST_tW_top_5f_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+ST_t-channel_top_4f_InclusiveDecays_TuneCP5_powheg-madspin  /ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+
+# ====== BACKGROUND — ttV =====================================================
+TTZToQQ_TuneCP5_13TeV_amcatnlo                      /TTZToQQ_TuneCP5_13TeV_amcatnlo-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v3/NANOAODSIM
+TTWJetsToQQ_TuneCP5_amcatnloFXFX-madspin            /TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+
+# ====== BACKGROUND — QCD (HT-binned) =========================================
+QCD_HT100to200_TuneCP5_PSWeights_madgraph           /QCD_HT100to200_TuneCP5_PSWeights_13TeV-madgraph-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+QCD_HT200to300_TuneCP5_PSWeights_madgraph           /QCD_HT200to300_TuneCP5_PSWeights_13TeV-madgraph-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
+QCD_HT300to500_TuneCP5_PSWeights_madgraph           /QCD_HT300to500_TuneCP5_PSWeights_13TeV-madgraph-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
 
 # Notes:
-#   - For 2016 / 2018 versions, copy the above with suffix swap and update
-#     the campaign string (e.g. RunIISummer20UL16NanoAODv9, RunIISummer20UL18).
-#   - For PSWeight-based ISR/FSR systematics, the nominal samples already
-#     contain the weights — no separate dataset needed.
-#   - ISR/FSR up/down dedicated samples (no PSWeight needed) also exist:
-#       /TT*_TuneCP5_*ISRdown_*, /TT*_TuneCP5_*FSRup_*  etc. — add if needed.
+#   - For 2016 / 2018 versions, copy the above with campaign-string swap
+#     (RunIISummer20UL16NanoAODv9 / RunIISummer20UL18NanoAODv9).
+#   - PSWeight-based ISR/FSR systematics: nominal ttbar samples already carry
+#     the weights — no separate dataset needed.
+#   - Dedicated ttbar systematics samples (hdamp/mtop/tune/CR/erdON, ISR/FSR
+#     up/down): see datasets.txt.full.

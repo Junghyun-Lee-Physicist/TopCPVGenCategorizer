@@ -8,7 +8,7 @@
     - 본문의 channel_idx       ↔  GenCatTree 브랜치  Channel_Idx
     - 본문의 channel_idx_final ↔  GenCatTree 브랜치  Channel_Idx_Final
   구현 세부(코드 알고리즘, 12-slot 배열, FindTopAntiTop, ComputeChannel*)는
-  docs/TECHNICAL.md를, statusFlags 비트 활용은 TECHNICAL.md §2.1을 참조.
+  docs/04_TECHNICAL.md를, statusFlags 비트 활용은 TECHNICAL.md §2.1을 참조.
 
   주의: §4의 finalGenParticles pruning rule은 CMSSW master 기준 예시이다. 실제
   분석에 쓴 UL NanoAODv9의 정확한 rule은 해당 production의 CMSSW release tag에서

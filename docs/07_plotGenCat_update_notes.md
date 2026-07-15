@@ -206,8 +206,8 @@ The script still uses:
 
 ```bash
 python3 validation/plotGenCat.py \
-    /eos/user/j/junghyun/CPV/TTToSemiLeptonic_2017 \
-    /eos/user/j/junghyun/CPV/TTTo2L2Nu_2017 \
+    /eos/user/j/junghyun/CPV/TTToSemiLeptonic_TuneCP5_powheg \
+    /eos/user/j/junghyun/CPV/TTTo2L2Nu_TuneCP5_powheg \
     /eos/user/j/junghyun/CPV/TTToHadronic_2017 \
     --label SemiLep --label 2L2Nu --label Hadronic \
     --scale SemiLep=365 \
@@ -221,8 +221,8 @@ python3 validation/plotGenCat.py \
 
 ```bash
 python3 validation/plotGenCat.py \
-    /eos/user/j/junghyun/CPV/TTToSemiLeptonic_2017 \
-    /eos/user/j/junghyun/CPV/TTTo2L2Nu_2017 \
+    /eos/user/j/junghyun/CPV/TTToSemiLeptonic_TuneCP5_powheg \
+    /eos/user/j/junghyun/CPV/TTTo2L2Nu_TuneCP5_powheg \
     /eos/user/j/junghyun/CPV/TTToHadronic_2017 \
     --label SemiLep --label 2L2Nu --label Hadronic \
     --scale SemiLep=365 \
@@ -237,8 +237,8 @@ python3 validation/plotGenCat.py \
 
 ```bash
 python3 validation/plotGenCat.py \
-    /eos/user/j/junghyun/CPV/TTToSemiLeptonic_2017 \
-    /eos/user/j/junghyun/CPV/TTTo2L2Nu_2017 \
+    /eos/user/j/junghyun/CPV/TTToSemiLeptonic_TuneCP5_powheg \
+    /eos/user/j/junghyun/CPV/TTTo2L2Nu_TuneCP5_powheg \
     /eos/user/j/junghyun/CPV/TTToHadronic_2017 \
     --label SemiLep --label 2L2Nu --label Hadronic \
     --only Channel_Idx,Channel_Idx_numeric,Channel_Idx_Final,Channel_Idx_Final_numeric \
@@ -250,8 +250,8 @@ python3 validation/plotGenCat.py \
 
 ```bash
 python3 validation/plotGenCat.py \
-    /eos/user/j/junghyun/CPV/TTToSemiLeptonic_2017 \
-    /eos/user/j/junghyun/CPV/TTTo2L2Nu_2017 \
+    /eos/user/j/junghyun/CPV/TTToSemiLeptonic_TuneCP5_powheg \
+    /eos/user/j/junghyun/CPV/TTTo2L2Nu_TuneCP5_powheg \
     /eos/user/j/junghyun/CPV/TTToHadronic_2017 \
     --label SemiLep --label 2L2Nu --label Hadronic \
     --scale SemiLep=365 \

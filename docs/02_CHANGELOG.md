@@ -1,0 +1,20 @@
+# 02 — CHANGELOG
+
+> NtupleForge와 동일한 문서 구조(01_STATUS / 02_CHANGELOG / 03_DECISIONS / 번호
+> 기술 문서)를 따른다. 이 파일은 README의 "버전 기록" 섹션을 2026-07-15에
+> 이관한 것으로, 최신 항목이 위에 온다. NtupleForge 쪽 대응 항목은
+> NtupleForge `docs/02_CHANGELOG.md` 참조.
+
+## 버전 기록
+
+- **v1.10** — **문서 구조를 NtupleForge와 동일하게 재편 + 검증 캠페인 datasets 확장.** ① README의 "버전 기록"을 `docs/02_CHANGELOG.md`로, 기술 섹션(동작 모드/B-frag/검증/friend tree)을 `docs/04_TECHNICAL.md` 부록으로 이관하고 `docs/01_STATUS.md`·`docs/03_DECISIONS.md` 신설, 기존 기술 문서를 04~07로 renumber (TECHNICAL→04, GenPart_channel_definition→05, GenIndex_validation→06, plotGenCat_update_notes→07; 내부 링크 일괄 갱신). README는 개요+quickstart+문서 인덱스로 슬림화. ② `condor/datasets.txt`를 2017UL 검증 캠페인 **13 샘플 전체**(ttbar 3 + V+jets 3 + single top 2 + ttV 2 + QCD HT 3)로 교체 — 라벨을 NtupleForge 제출 YAML 키와 1:1 정렬 (D-2026-07-15-datasets-labels; 구 라벨 `TTTo*_2017`은 폐기, systematics는 datasets.txt.full). 코드 변경 없음 — 로직·출력 포맷은 v1.9.1과 동일.
+
+
+- **v1.9.1** — **A14 수정: beam-parallel energy overflow.** §2b 재구축으로 background 선택에 status-21 incoming parton이 (MiniAOD와 동일하게) 포함되는데, NanoAOD는 이들의 eta를 O(10³~10⁴)로 저장 → `std::cosh`가 조용히 `inf`를 반환해 `GenPar_energy`에 기록될 상황이었음 (NtupleForge Python 모듈은 같은 지점에서 `OverflowError`로 크래시 — QCD_HT 2017UL CRAB 첫 시도에서 발견). 4개 energy 계산 지점을 `SafeEnergy()`로 통일: `|eta| > 50`이면 −999 sentinel (물리적 gen 입자는 |eta| < ~20; MiniAOD는 `genPar->energy()`를 직접 읽어 실값을 저장했으나 NanoAOD의 (pt≈0, eta≈∞)에서는 복구 불가). crosscheck 하니스에 회귀 테스트 추가 (E3 incoming legs eta ±23000).
+- **v1.9** — **패키지명 변경: `SSBGenCategorizer` → `TopCPVGenCategorizer`.** 클래스·파일·디렉토리·include guard·`TopCPVGenStatusBit` 네임스페이스·condor 스크립트·문서 접두어 일괄 변경. 원본 MiniAOD 프레임워크의 외부 이름 인용(`SSBAnalyzer`, `SSBTree`, `SSBCorrections`, `SSBCPVCalc`, `ssb_miniaod*.root` 예시)은 실제 코드명이므로 그대로 유지. 출력 포맷은 **불변** — 트리명 `GenCatTree`, 브랜치명, event-id join key 모두 동일하므로 `validate_topcpvcat.py`·`plotGenCat.py`·`makeBfragFriend.py` 사용법과 기존 산출물 호환성에 영향 없음. lxplus에서는 디렉토리명 변경에 따라 새 경로에 배포 후 재컴파일 필요.
+- **v1.8** — **MiniAOD 충실도 복원 + NtupleForge 모듈과 동기화** (기준 = MiniAOD `SSBAnalyzer`; NtupleForge `docs/TopCPV/02_faithfulness_vs_miniaod.md` audit 참조). ① `Channel_Idx`를 **전체 selected list**에 대해 합산 — background가 더 이상 0으로 강제되지 않음(MiniAOD §2.1). ② `Channel_Idx_Final`을 `GenDressedLepton` 지름길 대신 **GenPart daughter-map walk**로 재구현(MiniAOD §2.2): τ의 leptonic daughter를 GenPar에 append, `<14/>14` 부호 규칙, ν도 τ 제거를 트리거(hadronic τ는 제거만 되고 대체 없음), dressing/pt 하한 제거. `GenDressedLepton` 브랜치 등록 삭제. ③ `FillBackgroundSelection`을 MiniAOD §1.6 등가로 재구축: base set = `isHardProcess` 입자 전체 + **직접** boson(t/Z/W/H) mother를 가진 status-1/2 lepton — 기존 휴리스틱(last-copy boson + 1단계 딸 + hard-process τ rescue)이 갖던 두 결함(explicit-Z→ττ에서 τ 이중 카운트 −60, boson row 없는 ME ℓℓ에서 e/μ 누락 → 0) 제거. ④ 진단 브랜치 `Channel_Idx_Expanded` 추가(= `Channel_Idx`, 단 isSignal이고 slot 2–11 중 결손 시 −999; `Channel_Idx` 자체는 MiniAOD와 bit-동일 유지) + Loop 요약에 unclassifiable 카운트. ⑤ stub-ROOT 교차 검증 하니스(`validation/crosscheck/`) 추가 — 합성 3이벤트(ttbar signal / Z→ττ / boson-less μμ)에서 C++와 NtupleForge Python 모듈의 파생값 완전 일치 확인(ROOT 불필요, `g++ -std=c++17`만으로 실행).
+- **v1.7** — 검증된 `GenPart`/channel 정의 문서(`docs/05_GenPart_channel_definition.md`) 추가, docs/04_TECHNICAL.md에 교차참조. 플로터에 top/anti-top의 나머지 4-momentum 성분 추가: `phi`, `energy`, 그리고 계산된 `mass`(m_t=172.5 GeV 피크로 4-vector 조립 검증). `GenPar_role.pptx`의 channel 정의 슬라이드를 W-decay-level vs τ-resolved 구분에 맞게 수정.
+- **v1.6** — 검증 플로터(`plotGenCat.py`) 재작성: 개별 플롯 PDF 저장, overlay 기본 / stack은 `--draw-stack` 시에만, `Channel_Idx`·`Channel_Idx_Final`의 named + numeric 두 버전, `--only` 관측량 선택, overlay에도 σ·BR·lumi/N 정규화 적용. 플로터 사용/변경 문서(`README_plotGenCat.md`, `docs/07_plotGenCat_update_notes.md`) 추가. `datasets.txt`(nominal 3종) / `datasets.txt.full`(전체) 분리. v1.5의 event-id join key + `makeBfragFriend.py`(B-frag friend tree) 포함.
+- **v1.5** — GenCatTree에 (run, luminosityBlock, event) join key 기록(standalone). `makeBfragFriend.py`로 MiniAOD B-frag weight를 friend tree로 복구. (§8.3)
+- **v1.4** — HTCondor 출력 검증/재제출 (`checkOutputs.sh`, `resubmit_failed.sh`).
+- **v1.3** — NanoAOD standalone 전 generator 블록 재현 (GenPar/GenJet/GenMET/ghost-B/channel), HTCondor 대량 처리.

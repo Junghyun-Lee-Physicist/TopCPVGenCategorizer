@@ -151,7 +151,7 @@ xrdfs root://eosuser.cern.ch ls -l /eos/user/j/junghyun/ttbar_gencat/2017/
 
   BAD chunk detail:
     TOOSMALL  TTToSemiLeptonic_2017/..._chunk017.root (1024B < 102400B)
-    MISSING   TTTo2L2Nu_2017/..._chunk003.root
+    MISSING   TTTo2L2Nu_TuneCP5_powheg/..._chunk003.root
 ```
 
 BAD chunk 목록은 `submissions/<TAG>/index_bad.txt`에 기록되어 재제출에 쓰입니다.
