@@ -1,0 +1,30 @@
+# TopCPVGenCategorizer -- standalone ROOT/Makefile package.
+# Created 2026-07-27 (the repo had no .gitignore and was tracking .DS_Store).
+
+# macOS
+.DS_Store
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Build products (standalone `make`)
+bin/
+obj/
+lib/
+*.o
+*.so
+*.d
+
+# ROOT outputs (GenCatTree_*.root etc.) -- regenerable, large
+*.root
+
+# Condor scratch from condor/submit_all.sh
+*.out
+*.err
+*.condor_log
+logs/
+condor/logs/
+
+# Local scratch
+tmp/

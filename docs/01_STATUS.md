@@ -1,6 +1,6 @@
 # 01 — STATUS
 
-> 마지막 갱신: 2026-07-15 (v1.10). NtupleForge와 동일한 문서 구조.
+> 마지막 갱신: 2026-07-26 (v1.10; NtupleForge D-F rename 반영). NtupleForge와 동일한 문서 구조.
 
 ## 현재 상태
 
@@ -24,7 +24,13 @@
    주의: 라벨이 구버전(`TTTo*_2017`)에서 바뀌었으므로 출력 디렉토리명도 바뀜.
 3. **validate_topcpvcat.py 캠페인** — 샘플별 (NtupleForge `forgedNtuple` ↔
    standalone `GenCatTree`) event-matched 비교. int exact / float ftol 1e-4.
-   NtupleForge 쪽 산출물 파일명은 2026-07-15부터 `forgedNtuple_*.root`
-   (이전 태스크는 `slimmedNtuple_*.root`).
+   NtupleForge 쪽 산출물 파일명은 **2026-07-26 rename(D-F) 이후 생산분부터**
+   `forgedNtuple_*.root` 이다. 그 이전 생산분(2017UL 전부)은
+   `slimmedNtuple_*.root` 다. **rename 후 첫 실제 CRAB 생산 = 2026-07-27 의
+   ttHH UL18 full 캠페인**(85 task / 7,466 job, 진행 중)이며 그 산출물은
+   `forgedNtuple_*.root` 로 나온다 — 즉 두 이름이 Tier-3 에 공존한다. CPV 쪽
+   캠페인은 아직 rename 이후 생산이 없다. filelist 생성기들은 두 prefix 를 **모두**
+   매칭하므로 어느 쪽이든 동작한다 (NtupleForge `docs/02_CHANGELOG.md` 2026-07-26 (6),
+   2026-07-27).
 4. **DY Draw sanity** (NtupleForge audit §2b) — `Channel_Idx`가 ±22/26에 서고
    −60 피크가 없는지 1회 확인.
