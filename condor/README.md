@@ -75,6 +75,28 @@ JOB_FLAVOUR="workday"
 
 ```bash
 cd condor
+> **condor_q 샘플별 표시 (v1.10.2):** JDL이 `MY.JobBatchName = "$(short)"`를
+> 지정하므로 `condor_q`가 dataset별 한 줄로 묶어서 보여준다. 샘플 단위 제어:
+> `condor_rm -constraint 'JobBatchName=="QCD_HT100to200_TuneCP5_PSWeights_madgraph"'`.
+> v1.10.2 **이전에 렌더된** JDL(예: 20260715-080617)은 제출 전에 한 줄만 추가:
+> ```bash
+> sed -i '/^MY.WantOS/a MY.JobBatchName         = "$(short)"' \
+>     submissions/<TAG>/submit.jdl
+> ./submit_all.sh -s <TAG>
+> ```
+> 이미 제출해버린 클러스터는 소급 태깅도 가능:
+> ```bash
+> for L in $(awk -F', *' '{print $2}' submissions/<TAG>/index_for_condor.txt | sort -u); do
+>     condor_qedit -constraint "regexp(\"$L\",Arguments)" JobBatchName "\"$L\""
+> done
+> ```
+
+> **컨테이너/호스트 분리 (중요):** 빌드는 `cmssw-el8` 컨테이너 **안**, 제출은
+> 컨테이너에서 `exit`한 **lxplus 호스트 셸**에서. 컨테이너 안에는
+> `condor_submit`이 없다 (worker node OS는 JDL의 `MY.WantOS="el8"`가 담당하므로
+> 제출 셸과 무관). 컨테이너 안에서 실행하다 멈췄다면 filelists/JDL은 이미
+> 생성돼 있으니 호스트에서 `./submit_all.sh -s <TAG>`로 이어서 제출하면 된다.
+
 ./submit_all.sh -n
 ```
 

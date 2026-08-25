@@ -16,6 +16,12 @@
 #
 #  Build note: CMSSW_14_2_1 is EL8. Build the binary once inside cmssw-el8:
 #      cmssw-el8
+#
+#  SUBMIT note: run THIS script on the native lxplus host shell, NOT inside
+#  the container — condor_submit only exists on the host (worker-node OS is
+#  handled separately via MY.WantOS="el8" in the JDL). If a run was started
+#  inside the container by mistake, the rendered JDL survives; recover with:
+#      ./submit_all.sh -s <TAG>
 #      cd $CMSSW_AREA && cmsenv && make clean && make
 #      exit
 # =============================================================================
@@ -29,11 +35,13 @@ cd "$SCRIPT_DIR"
 # ----------------------------------------------------------------------
 TAG=""
 DRYRUN=0
+SUBMIT_ONLY=0
 CONFIG="config.sh"
-while getopts "t:nc:h" opt; do
+while getopts "t:ns:c:h" opt; do
     case $opt in
         t) TAG="$OPTARG" ;;
         n) DRYRUN=1 ;;
+        s) SUBMIT_ONLY=1; TAG="$OPTARG" ;;
         c) CONFIG="$OPTARG" ;;
         h) grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) echo "invalid option; use -h for help"; exit 64 ;;
@@ -49,6 +57,41 @@ source "$CONFIG"
 
 [ -z "$TAG" ] && TAG=$(date -u +%Y%m%d-%H%M%S)
 SUBDIR="$SUBMIT_ROOT/$TAG"
+
+# ----------------------------------------------------------------------
+# Preflight: HTCondor client must be available before we do ANY work.
+# The cmssw-el8 container has no condor CLI — build happens INSIDE the
+# container, but submission happens OUTSIDE, on the native lxplus shell.
+# Failing here (not after 13 DAS queries) keeps the failure cheap; the
+# rendered JDL of an interrupted run can be submitted with:  -s <TAG>
+# ----------------------------------------------------------------------
+if [ $DRYRUN -eq 0 ] && ! command -v condor_submit >/dev/null 2>&1; then
+    echo "[FATAL] condor_submit not found in PATH."
+    if [ -n "${APPTAINER_CONTAINER:-}${SINGULARITY_CONTAINER:-}${SINGULARITY_NAME:-}" ]; then
+        echo "        You are INSIDE a cmssw-el8/apptainer container — the HTCondor"
+        echo "        client only exists on the native lxplus host shell."
+        echo "        Workflow:  build inside the container, then 'exit' and run"
+        echo "        this script (or 'condor_submit <rendered jdl>') on the host."
+    fi
+    echo "        If a previous run already rendered a JDL, submit it directly:"
+    echo "            ./submit_all.sh -s <TAG>"
+    echo "        or: condor_submit $SUBMIT_ROOT/<TAG>/submit.jdl"
+    exit 1
+fi
+
+# ----------------------------------------------------------------------
+# Submit-only mode: reuse an existing submission workspace (filelists,
+# index, rendered JDL all already on disk) — e.g. after the preflight
+# above stopped a run that was started inside the container.
+# ----------------------------------------------------------------------
+if [ $SUBMIT_ONLY -eq 1 ]; then
+    RENDERED_JDL="$SUBDIR/submit.jdl"
+    [ -f "$RENDERED_JDL" ] || { echo "[FATAL] no rendered JDL at $RENDERED_JDL"; exit 1; }
+    echo "[submit-only] submitting existing workspace: $SUBDIR"
+    condor_submit "$RENDERED_JDL"
+    echo "  Monitor: condor_q $USER"
+    exit 0
+fi
 
 echo "=================================================================="
 echo "  TopCPVGenCategorizer condor submission"
@@ -152,6 +195,10 @@ render_jdl() {
 universe                = vanilla
 executable              = $SCRIPT_DIR/runJob.sh
 MY.WantOS               = "$WORKER_OS"
+# condor_q's default (batch) view groups by JobBatchName -> one line PER
+# DATASET instead of one line for the whole cluster. Also enables per-sample
+# control:  condor_rm -constraint 'JobBatchName=="<label>"'
+MY.JobBatchName         = "\$(short)"
 
 arguments               = \$(chunk_name) \$(short) \$(idx) $EOS_OUTBASE
 
